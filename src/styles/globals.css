@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --color-primary: #805062;
+    --color-tertiary: #705d00;
+    --color-background: #fef8fa;
+    --color-on-surface: #1d1b1d;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-on-surface font-body antialiased;
+  }
+
+  ::selection {
+    @apply bg-primary-container text-on-primary-container;
+  }
+}
+
+@layer components {
+  .glass-nav {
+    @apply bg-white/60 dark:bg-stone-900/60 backdrop-blur-md;
+    box-shadow: 0 20px 40px rgba(128, 80, 98, 0.06);
+  }
+
+  .ambient-shadow {
+    box-shadow: 0 20px 40px rgba(128, 80, 98, 0.06);
+  }
+
+  .glow-chip {
+    box-shadow: 0 0 12px rgba(239, 201, 0, 0.3);
+  }
+
+  .btn-primary {
+    @apply px-8 py-4 bg-primary text-on-primary rounded-full font-medium;
+    box-shadow: 0 20px 40px rgba(128, 80, 98, 0.06);
+    @apply hover:opacity-90 active:scale-[0.98] transition-all;
+  }
+
+  .btn-secondary {
+    @apply px-6 py-3 bg-secondary-container text-on-secondary-container rounded-full font-medium;
+    @apply hover:bg-primary-fixed transition-all;
+  }
+
+  .card-surface {
+    @apply bg-surface-container-lowest p-8 rounded-lg;
+    box-shadow: 0 20px 40px rgba(128, 80, 98, 0.06);
+  }
+
+  .style-card {
+    @apply bg-surface-container-lowest p-8 rounded-lg border-2 border-transparent;
+    box-shadow: 0 20px 40px rgba(128, 80, 98, 0.06);
+    @apply hover:border-primary-fixed transition-all duration-300 cursor-pointer;
+  }
+
+  .style-card-selected {
+    @apply border-primary-fixed ring-4 ring-primary-container/10;
+  }
+}
+
+@layer utilities {
+  .text-headline {
+    @apply font-headline;
+  }
+
+  .text-display {
+    @apply font-headline text-5xl md:text-7xl font-black tracking-tight;
+  }
+}
+
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
