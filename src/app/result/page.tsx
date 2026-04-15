@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
+import { useLanguage, Translations } from "@/lib/i18n";
 
 type StyleType = "ancient" | "romantic" | "devotion" | "article" | "minimal";
 
@@ -17,31 +18,31 @@ interface PraiseData {
 
 const styleConfig: Record<
   StyleType,
-  { title: string; subtitle: string; icon: string }
+  { titleKey: keyof Translations; subtitleKey: keyof Translations; icon: string }
 > = {
   ancient: {
-    title: "Ancient Poetry",
-    subtitle: "Elegant verses inspired by Tang and Song dynasties",
+    titleKey: "ancientPoetry",
+    subtitleKey: "ancientPoetrySubtitle",
     icon: "auto_stories",
   },
   romantic: {
-    title: "English Romance",
-    subtitle: "Flowing prose in the style of Victorian literature",
+    titleKey: "englishRomance",
+    subtitleKey: "englishRomanceSubtitle",
     icon: "favorite",
   },
   devotion: {
-    title: "Unconditional Devotion",
-    subtitle: "Playful, hyperbolic, and deeply affectionate",
+    titleKey: "unconditionalDevotion",
+    subtitleKey: "unconditionalDevotionSubtitle",
     icon: "volunteer_activism",
   },
   article: {
-    title: "Long Article",
-    subtitle: "A narrative journey detailing every nuance",
+    titleKey: "longArticle",
+    subtitleKey: "longArticleSubtitle",
     icon: "history_edu",
   },
   minimal: {
-    title: "Minimalist",
-    subtitle: "Short, punchy, and modern",
+    titleKey: "minimalist",
+    subtitleKey: "minimalistSubtitle",
     icon: "ink_highlighter",
   },
 };
@@ -52,18 +53,18 @@ export default function ResultPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [praise, setPraise] = useState<string>("");
   const [copied, setCopied] = useState(false);
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     const stored = sessionStorage.getItem("praiseData");
     if (!stored) {
-      router.push("/upload");
+      router.push("/create");
       return;
     }
 
     const parsedData: PraiseData = JSON.parse(stored);
     setData(parsedData);
 
-    // If we don't have praise yet, generate it
     if (!parsedData.praise) {
       generatePraise(parsedData);
     } else {
@@ -87,7 +88,6 @@ export default function ResultPage() {
       const result = await response.json();
       setPraise(result.praise);
     } catch (error) {
-      // Fallback praise if API fails
       setPraise(
         "There is a light you carry that doesn't just illuminate the room—it ignites the spirit of everyone within it. Like golden hour captured in a single smile."
       );
@@ -122,7 +122,7 @@ export default function ResultPage() {
             progress_activity
           </span>
           <p className="font-headline text-xl text-on-surface-variant">
-            Crafting your praise...
+            {t.generating}
           </p>
         </div>
       </main>
@@ -130,6 +130,7 @@ export default function ResultPage() {
   }
 
   const style = styleConfig[data.style];
+  const styleTitle = t[style.titleKey].split(" ")[0];
 
   return (
     <main className="min-h-screen pb-20">
@@ -137,14 +138,11 @@ export default function ResultPage() {
       <div className="pt-32 pb-20 px-6 max-w-6xl mx-auto">
         <header className="mb-16 text-center">
           <h1 className="font-headline text-5xl md:text-7xl font-black text-on-surface tracking-tighter mb-4">
-            A Moment of{" "}
-            <span className="italic text-primary">
-              {style.title.split(" ")[0]}
-            </span>
+            {t.aMomentOf}{" "}
+            <span className="italic text-primary">{styleTitle}</span>
           </h1>
           <p className="font-body text-on-surface-variant max-w-xl mx-auto leading-relaxed">
-            Your uploaded memory has been paired with a curated reflection. This
-            is your digital keepsake to cherish and share.
+            {t.yourUploadedMemory}
           </p>
         </header>
 
@@ -170,10 +168,10 @@ export default function ResultPage() {
                   </div>
                   <div className="text-white">
                     <p className="text-xs font-label uppercase tracking-widest opacity-80">
-                      Memory Recorded
+                      {t.memoryRecorded}
                     </p>
                     <p className="font-headline italic text-lg text-tertiary-fixed">
-                      {new Date().toLocaleDateString("en-US", {
+                      {new Date().toLocaleDateString(language === "zh" ? "zh-CN" : "en-US", {
                         month: "long",
                         day: "numeric",
                         year: "numeric",
@@ -202,16 +200,16 @@ export default function ResultPage() {
                   >
                     star
                   </span>
-                  The {style.title} Style
+                  {t.theStyle} {t[style.titleKey]}
                 </div>
                 <p className="font-headline text-3xl md:text-4xl text-on-surface leading-tight font-medium italic">
                   &ldquo;{praise}&rdquo;
                 </p>
                 <div className="h-0.5 w-16 bg-tertiary-container" />
                 <p className="font-body text-on-surface-variant leading-relaxed text-lg">
-                  This moment captures the essence of beauty. Every detail in
-                  this frame speaks to a soul that is unafraid to shine brightly,
-                  even in the quietest of hours.
+                  This moment captures the essence of beauty. Every detail in this
+                  frame speaks to a soul that is unafraid to shine brightly, even
+                  in the quietest of hours.
                 </p>
               </div>
             </div>
@@ -225,7 +223,7 @@ export default function ResultPage() {
                 <span className="material-symbols-outlined">
                   {copied ? "check" : "content_copy"}
                 </span>
-                {copied ? "Copied!" : "Copy Text"}
+                {copied ? t.copied : t.copyText}
               </button>
               <div className="grid grid-cols-2 gap-4">
                 <button
@@ -233,14 +231,14 @@ export default function ResultPage() {
                   className="py-4 px-6 bg-secondary-container text-on-secondary-container rounded-full font-label font-semibold flex items-center justify-center gap-3 hover:bg-primary-fixed transition-all"
                 >
                   <span className="material-symbols-outlined">share</span>
-                  Share
+                  {t.share}
                 </button>
                 <button
-                  onClick={() => router.push("/upload")}
+                  onClick={() => router.push("/create")}
                   className="py-4 px-6 bg-surface-container-highest text-on-surface rounded-full font-label font-semibold flex items-center justify-center gap-3 hover:bg-outline-variant transition-all"
                 >
                   <span className="material-symbols-outlined">add</span>
-                  New Photo
+                  {t.newPhoto}
                 </button>
               </div>
             </div>
@@ -252,18 +250,15 @@ export default function ResultPage() {
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
             <div>
               <h2 className="font-headline text-4xl font-black text-on-surface tracking-tight mb-2">
-                Explore Other{" "}
-                <span className="text-tertiary">Auras</span>
+                {t.exploreOtherAuras}
               </h2>
-              <p className="text-on-surface-variant font-body">
-                Change the mood of your keepsake with different praise styles.
-              </p>
+              <p className="text-on-surface-variant font-body">{t.changeMood}</p>
             </div>
             <Link
-              href="/upload"
+              href="/create"
               className="text-primary font-label font-bold flex items-center gap-2 hover:gap-4 transition-all"
             >
-              View all styles{" "}
+              {t.viewAllStyles}
               <span className="material-symbols-outlined">arrow_forward</span>
             </Link>
           </div>
@@ -290,13 +285,13 @@ export default function ResultPage() {
                     </span>
                   </div>
                   <h3 className="font-headline text-2xl font-bold mb-3">
-                    {config.title}
+                    {t[config.titleKey]}
                   </h3>
                   <p className="text-on-surface-variant text-sm leading-relaxed mb-6">
-                    {config.subtitle}
+                    {t[config.subtitleKey]}
                   </p>
                   <div className="text-tertiary font-label text-xs font-black uppercase tracking-widest">
-                    Select Style
+                    {t.selectStyle}
                   </div>
                 </div>
               ))}

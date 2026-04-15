@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Noto_Serif, Inter } from "next/font/google";
+import ClientLayout from "@/components/ClientLayout";
 import "./globals.css";
 
 const notoSerif = Noto_Serif({
@@ -18,7 +19,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Aura of Praise - Transform Photos into Poetic Masterpieces",
+  title: "Compliment Garden / 赞美花园 - Transform Photos into Poetic Masterpieces",
   description:
     "Upload a photo and receive AI-generated, heartfelt praise in various literary styles. The digital keepsake for cherished moments.",
   icons: {
@@ -53,7 +54,9 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-screen">{children}</body>
+      <body className="min-h-screen">
+        <ClientLayout>{children}</ClientLayout>
+      </body>
     </html>
   );
 }

@@ -5,57 +5,57 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
+import { useLanguage, Translations } from "@/lib/i18n";
 
 type StyleType = "ancient" | "romantic" | "devotion" | "article" | "minimal";
 
 interface StyleOption {
   id: StyleType;
-  title: string;
-  subtitle: string;
+  titleKey: keyof Translations;
+  subtitleKey: keyof Translations;
   icon: string;
-  tag: string;
+  tagKey?: keyof Translations;
   tagType: "classic" | "emotional" | "detailed" | "default";
 }
 
 const styles: StyleOption[] = [
   {
     id: "ancient",
-    title: "Ancient Poetry",
-    subtitle: "古诗词 - Elegant verses inspired by Tang and Song dynasties",
+    titleKey: "ancientPoetry",
+    subtitleKey: "ancientPoetrySubtitle",
     icon: "auto_stories",
-    tag: "Classic",
+    tagKey: "ancientPoetryTag",
     tagType: "classic",
   },
   {
     id: "romantic",
-    title: "English Romance",
-    subtitle: "Flowing prose in the style of Victorian literature",
+    titleKey: "englishRomance",
+    subtitleKey: "englishRomanceSubtitle",
     icon: "favorite",
-    tag: "Active Choice",
+    tagKey: "activeChoice",
     tagType: "default",
   },
   {
     id: "devotion",
-    title: "Unconditional Devotion",
-    subtitle: "Playful, hyperbolic, and deeply affectionate expressions",
+    titleKey: "unconditionalDevotion",
+    subtitleKey: "unconditionalDevotionSubtitle",
     icon: "volunteer_activism",
-    tag: "Emotional",
+    tagKey: "unconditionalDevotionTag",
     tagType: "emotional",
   },
   {
     id: "article",
-    title: "Long Article",
-    subtitle: "A narrative journey detailing every nuance",
+    titleKey: "longArticle",
+    subtitleKey: "longArticleSubtitle",
     icon: "history_edu",
-    tag: "Detailed",
+    tagKey: "longArticleTag",
     tagType: "detailed",
   },
   {
     id: "minimal",
-    title: "Minimalist",
-    subtitle: "Short, punchy, and modern. Less is more.",
+    titleKey: "minimalist",
+    subtitleKey: "minimalistSubtitle",
     icon: "ink_highlighter",
-    tag: "",
     tagType: "default",
   },
 ];
@@ -67,6 +67,7 @@ export default function UploadPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { t } = useLanguage();
 
   const handleImageUpload = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,7 +101,6 @@ export default function UploadPage() {
 
     setIsGenerating(true);
 
-    // Store data in sessionStorage for result page
     sessionStorage.setItem(
       "praiseData",
       JSON.stringify({
@@ -109,11 +109,8 @@ export default function UploadPage() {
       })
     );
 
-    // Navigate to result page
     router.push("/result");
   };
-
-  const selectedStyleData = styles.find((s) => s.id === selectedStyle)!;
 
   return (
     <main className="min-h-screen pb-20">
@@ -152,12 +149,8 @@ export default function UploadPage() {
                     <span className="material-symbols-outlined text-6xl text-outline mb-4">
                       add_photo_alternate
                     </span>
-                    <p className="text-on-surface-variant">
-                      Drag & drop your photo here
-                    </p>
-                    <p className="text-xs text-outline mt-2">
-                      or click to browse
-                    </p>
+                    <p className="text-on-surface-variant">{t.dragDropHere}</p>
+                    <p className="text-xs text-outline mt-2">{t.orClickToBrowse}</p>
                   </div>
                 )}
               </div>
@@ -173,14 +166,10 @@ export default function UploadPage() {
             {image && (
               <div className="mt-8 p-6 rounded-lg bg-surface-container-low">
                 <h3 className="font-headline text-xl font-bold text-primary mb-2">
-                  Photo Analysis
+                  {t.photoAnalysis}
                 </h3>
                 <p className="text-on-surface-variant text-sm leading-relaxed">
-                  We&apos;ve detected elements of{" "}
-                  <span className="font-semibold">Soft Light</span>,{" "}
-                  <span className="font-semibold">Natural Beauty</span>, and{" "}
-                  <span className="font-semibold">Serenity</span>. Ready to
-                  transform these visuals into heartfelt words.
+                  {t.photoAnalysisDesc}
                 </p>
               </div>
             )}
@@ -190,14 +179,13 @@ export default function UploadPage() {
           <div className="lg:col-span-7">
             <header className="mb-12">
               <span className="inline-block px-4 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed text-xs font-bold tracking-widest uppercase mb-4 glow-chip">
-                The Digital Keepsake
+                {t.digitalKeepsake}
               </span>
               <h1 className="font-headline text-5xl font-black text-on-surface tracking-tight mb-4">
-                Choose Your Voice
+                {t.chooseYourVoice}
               </h1>
               <p className="text-on-surface-variant text-lg">
-                Select the linguistic lens through which you wish to praise this
-                moment.
+                {t.selectLinguisticLens}
               </p>
             </header>
 
@@ -229,7 +217,7 @@ export default function UploadPage() {
                     <span className="material-symbols-outlined text-4xl text-primary">
                       {style.icon}
                     </span>
-                    {style.tag && (
+                    {style.tagKey && (
                       <div
                         className={`text-xs font-bold italic ${
                           style.tagType === "classic"
@@ -239,15 +227,15 @@ export default function UploadPage() {
                               : "text-primary opacity-100"
                         }`}
                       >
-                        {style.tag}
+                        {t[style.tagKey]}
                       </div>
                     )}
                   </div>
                   <h3 className="font-headline text-2xl font-bold text-on-surface mb-2">
-                    {style.title}
+                    {t[style.titleKey]}
                   </h3>
                   <p className="text-on-surface-variant text-sm leading-relaxed">
-                    {style.subtitle}
+                    {t[style.subtitleKey]}
                   </p>
                   <div
                     className={`w-8 h-1 mt-4 rounded-full ${
@@ -276,11 +264,11 @@ export default function UploadPage() {
                     <span className="animate-spin material-symbols-outlined">
                       progress_activity
                     </span>
-                    Generating...
+                    {t.generating}
                   </>
                 ) : (
                   <>
-                    Generate Praise
+                    {t.generatePraise}
                     <span className="material-symbols-outlined">sparkles</span>
                   </>
                 )}
@@ -289,12 +277,11 @@ export default function UploadPage() {
                 onClick={() => setImage(null)}
                 className="w-full sm:w-auto px-8 py-5 bg-surface-container-high text-on-surface-variant rounded-full font-medium text-lg hover:bg-surface-container-highest transition-colors"
               >
-                Retake Photo
+                {t.retakePhoto}
               </button>
             </div>
             <p className="mt-6 text-xs text-on-surface-variant italic text-center sm:text-left">
-              &ldquo;Words are the threads that weave our affection into
-              eternity.&rdquo;
+              &ldquo;{t.wordsAreThreads}&rdquo;
             </p>
           </div>
         </div>

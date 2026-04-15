@@ -2,36 +2,37 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useLanguage } from "@/lib/i18n";
 
-const sampleImage = "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=800&q=80";
+import sampleImage from "@/../public/images/hero-portrait.jpg";
 
 export default function HeroSection() {
+  const { t } = useLanguage();
+
   return (
     <section className="relative px-8 py-16 md:py-32 max-w-7xl mx-auto overflow-hidden">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         <div className="lg:col-span-7 z-10">
           <span className="inline-block px-4 py-1.5 mb-6 text-sm font-label font-medium tracking-wider uppercase text-on-secondary-container bg-secondary-container rounded-full">
-            The Art of Admiration
+            {t.artOfAdmiration}
           </span>
           <h1 className="font-headline text-5xl md:text-7xl font-black text-on-surface leading-[1.1] mb-8 tracking-tight">
-            Capture Her Radiance, <br />
-            <span className="italic font-serif text-primary">Gift Her Words.</span>
+            {t.captureRadiance} <br />
+            <span className="italic font-serif text-primary">{t.giftHerWords}</span>
           </h1>
           <p className="text-lg md:text-xl text-on-surface-variant max-w-xl mb-12 leading-relaxed">
-            Transform every portrait into a poetic masterpiece. Our AI understands
-            the soul of beauty, crafting personalized praise that resonates with
-            affection and grace.
+            {t.heroDescription}
           </p>
           <div className="flex flex-wrap gap-4">
-            <Link href="/upload" className="btn-primary flex items-center gap-2 group">
+            <Link href="/create" className="btn-primary flex items-center gap-2 group">
               <span className="material-symbols-outlined">upload_file</span>
-              Upload Photo
+              {t.uploadPhoto}
             </Link>
             <Link
               href="#styles"
               className="px-8 py-4 bg-surface-container-high text-on-surface-variant font-medium rounded-xl hover:bg-surface-container-highest transition-all flex items-center gap-2"
             >
-              Explore Styles
+              {t.exploreStyles}
               <span className="material-symbols-outlined">arrow_forward</span>
             </Link>
           </div>
@@ -44,6 +45,7 @@ export default function HeroSection() {
               fill
               className="object-cover"
               priority
+              unoptimized
             />
             <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent" />
           </div>
