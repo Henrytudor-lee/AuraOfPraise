@@ -3,6 +3,43 @@ import OpenAI from "openai";
 
 type StyleType = "ancient" | "romantic" | "devotion" | "article" | "minimal";
 
+// Rate limiting: store IP -> { count, resetTime }
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT = 10; // 10 requests
+const RATE_LIMIT_PERIOD = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+
+function getClientIP(request: NextRequest): string {
+  const forwarded = request.headers.get("x-forwarded-for");
+  const realIP = request.headers.get("x-real-ip");
+  if (forwarded) {
+    return forwarded.split(",")[0].trim();
+  }
+  if (realIP) {
+    return realIP;
+  }
+  return "unknown";
+}
+
+function checkRateLimit(ip: string): { allowed: boolean; remaining: number; resetTime: Date } {
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
+
+  // If no record or expired, create new record
+  if (!record || now > record.resetTime) {
+    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_LIMIT_PERIOD });
+    return { allowed: true, remaining: RATE_LIMIT - 1, resetTime: new Date(now + RATE_LIMIT_PERIOD) };
+  }
+
+  // If under limit, increment
+  if (record.count < RATE_LIMIT) {
+    record.count++;
+    return { allowed: true, remaining: RATE_LIMIT - record.count, resetTime: new Date(record.resetTime) };
+  }
+
+  // Rate limit exceeded
+  return { allowed: false, remaining: 0, resetTime: new Date(record.resetTime) };
+}
+
 const stylePrompts: Record<StyleType, string> = {
   ancient: `You are a master poet specializing in classical Chinese Tang and Song dynasty poetry. First, analyze the image carefully:
 - If there is a person in the image: praise the person, focusing on their most attractive features. If the person is female, emphasize her facial beauty, hairstyle, elegant demeanor, clothing, and overall feminine charm. If male, focus on his distinctive features and masculine charm.
@@ -28,13 +65,34 @@ Write a short, punchy, impactful statement (1-2 sentences max). Think modern adv
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting check
+    const clientIP = getClientIP(request);
+    const rateLimitResult = checkRateLimit(clientIP);
+
+    // Add rate limit headers
+    const headers = new Headers();
+    headers.set("X-RateLimit-Limit", RATE_LIMIT.toString());
+    headers.set("X-RateLimit-Remaining", rateLimitResult.remaining.toString());
+    headers.set("X-RateLimit-Reset", rateLimitResult.resetTime.toISOString());
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        {
+          error: "Rate limit exceeded",
+          message: `您今天的生成次数已用完。每天可生成 ${RATE_LIMIT} 次。明天 ${rateLimitResult.resetTime.toLocaleTimeString()} 重置。`,
+          resetTime: rateLimitResult.resetTime.toISOString(),
+        },
+        { status: 429, headers }
+      );
+    }
+
     const body = await request.json();
     const { image, style } = body as { image: string; style: StyleType };
 
     if (!image || !style) {
       return NextResponse.json(
         { error: "Missing image or style" },
-        { status: 400 }
+        { status: 400, headers }
       );
     }
 
@@ -53,7 +111,7 @@ export async function POST(request: NextRequest) {
         minimal: "Pure radiance. Timeless beauty.",
       };
 
-      return NextResponse.json({ praise: fallbackPraises[style] });
+      return NextResponse.json({ praise: fallbackPraises[style] }, { headers });
     }
 
     const prompt = stylePrompts[style];
@@ -95,11 +153,11 @@ export async function POST(request: NextRequest) {
       console.error("Qwen response:", JSON.stringify(response, null, 2));
       return NextResponse.json(
         { error: "No praise generated" },
-        { status: 500 }
+        { status: 500, headers }
       );
     }
 
-    return NextResponse.json({ praise: praise.trim() });
+    return NextResponse.json({ praise: praise.trim(), remaining: rateLimitResult.remaining }, { headers });
   } catch (error) {
     console.error("Generate error:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
