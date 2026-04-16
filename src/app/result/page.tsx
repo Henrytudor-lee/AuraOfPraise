@@ -162,7 +162,10 @@ export default function ResultPage() {
               <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/60 to-transparent">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full border-2 border-tertiary-container overflow-hidden bg-surface-container-lowest">
-                    <span className="material-symbols-outlined text-2xl text-tertiary flex items-center justify-center h-full">
+                    <span
+                      className="material-symbols-outlined text-2xl text-tertiary flex items-center justify-center h-full"
+                      style={{ fontVariationSettings: "'FILL' 1" }}
+                    >
                       {style.icon}
                     </span>
                   </div>
